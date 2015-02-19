@@ -81,4 +81,23 @@ describe Lotus::Container do
       body.must_equal ['Hello from RackApp']
     end
   end
+
+  describe '#call with multiple applications' do
+    before do
+      Lotus::Container.configure do
+        mount Backend::App, at: '/backend'
+        mount RackApp,      at: '/rack'
+        mount TinyApp,      at: '/'
+      end
+    end
+
+    it 'forwards to correct router' do
+      env = Rack::MockRequest.env_for('/rack', {})
+      status, headers, body = Lotus::Container.new.call(env)
+
+      status.must_equal  200
+      headers.must_equal({})
+      body.must_equal ['Hello from RackApp']
+    end
+  end
 end
